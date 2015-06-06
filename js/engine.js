@@ -46,7 +46,8 @@ var Engine = (function(global) {
          * our update function since it may be used for smooth animation.
          */
         update(dt);
-        render();
+        render(dt);
+
 
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -80,7 +81,29 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
+        checkGems();
+        checkGoal();
+
+
+    }
+    function checkGems() {
+        //loop through the gems and see if they were pick up by player
+        for (var i = 0; i < allItems.length; i++) {
+        allItems[i].pickupGem();
+        }
+
+    }
+    function checkCollisions() {
+        //loop through enemies to see if collided with player
+        allEnemies.forEach(function(enemy) {
+            enemy.collisions();
+        });
+
+    }
+    function checkGoal() {
+        goal.scoreGoal();
+
     }
 
     /* This is called by the update function  and loops through all of the
@@ -95,6 +118,9 @@ var Engine = (function(global) {
             enemy.update(dt);
         });
         player.update();
+
+
+
     }
 
     /* This function initially draws the "game level", it will then call
@@ -103,10 +129,11 @@ var Engine = (function(global) {
      * they are flipbooks creating the illusion of animation but in reality
      * they are just drawing the entire screen over and over.
      */
-    function render() {
+    function render(dt) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
@@ -136,8 +163,15 @@ var Engine = (function(global) {
             }
         }
 
+        //render gems and hears
+        for (var i = 0; i < allItems.length; i++) {
+            allItems[i].render();
+        }
 
         renderEntities();
+        gManager.render(dt);
+
+
     }
 
     /* This function is called by the render function and is called on each game
@@ -153,6 +187,7 @@ var Engine = (function(global) {
         });
 
         player.render();
+
     }
 
     /* This function does nothing but it could have been a good place to
@@ -172,7 +207,17 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        "images/char-boy.png",
+        "images/char-cat-girl.png",
+        "images/char-horn-girl.png",
+        "images/char-pink-girl.png",
+        "images/char-princess-girl.png",
+        "images/Gem-Blue.png",
+        "images/Gem-Green.png",
+        "images/Gem-Orange.png",
+        "images/Heart.png",
+        "images/Rock.png"
     ]);
     Resources.onReady(init);
 
@@ -180,5 +225,8 @@ var Engine = (function(global) {
      * object when run in a browser) so that developer's can use it more easily
      * from within their app.js files.
      */
+    global.canvas = canvas;
     global.ctx = ctx;
+
+
 })(this);
