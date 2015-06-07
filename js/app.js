@@ -3,7 +3,7 @@ var Enemy = function() {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
-    this.enemySpeed = this.setSpeed(110);
+    this.enemySpeed = this.setSpeed(gManager.gameLevel * 100);
     this.enemyLane = this.setLane();
     this.x = this.setXloc();
     this.y = this.setYloc();
@@ -28,7 +28,7 @@ Enemy.prototype.update = function(dt) {
         this.x = -101;
         //change lanes & speed
         this.setLane();
-        this.setSpeed(this.gameLevel * 100);
+        this.setSpeed(gManager.gameLevel * 100);
     }
 };
 
@@ -52,7 +52,7 @@ Enemy.prototype.collisions = function() {
     }
 };
 
-//generate random speed
+//generate random speed so all enemies speeds are different
 Enemy.prototype.setSpeed = function(speed) {
     speed = (speed / 4) + (Math.random() * 100 + 100);
     return speed;
@@ -75,7 +75,7 @@ Enemy.prototype.setYloc = function() {
     return yLoc;
 };
 
-//define the x coordinate so they don't all start at the same place
+//randomly select the x coordinate so they don't all start at the same place
 Enemy.prototype.setXloc = function() {
     var xLoc;
     xLoc = (0 - (Math.random() * 400 + 100));
@@ -112,7 +112,7 @@ Player.prototype.update = function(xMove, yMove) {
         xLoc = this.x + xMove;
         yLoc = this.y + yMove;
         //prevent player from moving off canvas. Only updates characters location
-        //if new location is still on screen.
+        //if location moving to is still on screen.
         if (xLoc < canvas.width && xLoc >= 0) {
             this.x = xLoc;
         }
@@ -127,7 +127,7 @@ Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-//When player dies it reduces number of lives and calls for game reset
+//When player dies reduce number of lives and calls for game reset
 Player.prototype.die = function() {
     gManager.lives = gManager.lives - 1;
     this.alive = "no";
@@ -140,7 +140,8 @@ Player.prototype.handleInput = function(keyPressed) {
     var xMove = 0;
     var yMove = 0;
 
-    //if game is running use key input to determin relative movement.
+    //If game is running use key input to determin relative movement. GameManager.handleInput() handles 
+    //key input if game isn't running.
     if (gManager.gameRunning === "yes") {
         if (keyPressed === "left") {
             xMove = -101;
@@ -160,16 +161,15 @@ Player.prototype.handleInput = function(keyPressed) {
     this.update(xMove, yMove);
 };
 
-//this class is the base for all items that you collect on the board such as
-//gems, hearts. It also is used for the rock which is an obstacle.
-
+//the Item class is the base for all items that you collect on the board such as
+//gems, hearts.
 var Item = function() {
     this.x = this.chooseXloc();
     this.y = this.chooseYloc();
     this.visible = "yes";
 };
 
-//generates random Y location y variables
+//generates random Y location
 Item.prototype.chooseYloc = function() {
     var yLoc;
     var yLoc = Math.floor(Math.random() * 3 + 1);
@@ -177,7 +177,8 @@ Item.prototype.chooseYloc = function() {
     this.y = yLoc;
     return yLoc;
 };
-//generates random x location x variables
+
+//generates random x location
 Item.prototype.chooseXloc = function() {
     var xLoc;
     var xLoc = Math.floor(Math.random() * 5);
@@ -186,7 +187,7 @@ Item.prototype.chooseXloc = function() {
     return xLoc;
 };
 
-//check to see if player overlaps gems if so pick up gem and give rewards
+//check to see if player overlaps gems. If so pick up gem and give rewards
 Item.prototype.pickupGem = function() {
     //define space used by player
     var playerLeft = player.x + 10;
@@ -200,7 +201,7 @@ Item.prototype.pickupGem = function() {
     var gemTop = this.y;
     var gemBottom = this.y + 70;
 
-    //check if they overlap
+    //if gem is visible and hasn't been collected yet check if they overlap and give reward
     if (this.visible === "yes") {
         if (gemLeft <= playerRight && gemRight >= playerLeft && gemTop <= playerBottom && gemBottom >= playerTop) {
             gManager.points = gManager.points + this.points;
@@ -303,15 +304,15 @@ var GameManager = function() {
     this.gameLevel = 1;
 };
 
-//resets game. returns player to start location and sets a counter that is used for
-//determining how long the screen showing game over, goal, or number of lives after player dies
+//resets game. returns player to start location and sets a counter variable screenTime that is used for
+//determining how long the screens are displayed. The screes are used to indicate "game over", goal, or number of lives after player dies
 GameManager.prototype.reset = function() {
     player.x = player.startX;
     player.y = player.startY;
     this.screenTime = 15;
 };
 
-//this function controls what feedback info should be provided to the use. It calls functions to display the game over screen,
+//this function controls what feedback info should be provided to the user. It calls functions to display the game over screen,
 //goal screen and info bar at the top of the board that displays # of points and lives remaining.
 //it uses the screenTime variable as a count down clock to determine how long the screen stays on the screen. Each
 //cycle through it subtracts from this variable until less than 0.
@@ -322,21 +323,21 @@ GameManager.prototype.render = function(dt) {
         this.selectCharScreen();
     }
 
-    //if the game is in progress, how the info bar at the top of screen
+    //if the game is in progress, show the info bar at the top of screen
     if (this.gameRunning === "yes") {
         this.gameInfoBar();
     }
 
-    //if player died either show game over screen or number of lives remaining
+    //if player died either show "game over" screen or number of lives remaining
     if (this.screenTime > 0 && player.alive === "no") {
 
         this.screenTime = this.screenTime - (dt * 10);
         if (this.lives < 0) {
-        this.gameRunning = "no";
-        this.gameOver();
+            this.gameRunning = "no";
+            this.gameOver();
         } else if (this.lives >= 0) {
-        this.gameRunning = "no";
-        this.died();
+            this.gameRunning = "no";
+            this.died();
         }
     }
 
@@ -373,7 +374,7 @@ GameManager.prototype.gameOver = function() {
         this.charSelected = "no"
         this.lives = 3;
         this.gameLevel = 1;
-        //returns enemies # and speed to level one
+        //returns enemies # and speed to level one settings
         if (allEnemies.length > 4) {
             var toDelete = allEnemies.length - 4;
             allEnemies.splice(4, toDelete);
@@ -387,7 +388,6 @@ GameManager.prototype.gameOver = function() {
             allItems[i].chooseXloc();
             allItems[i].chooseYloc();
         }
-
     }
 };
 
@@ -434,7 +434,6 @@ GameManager.prototype.goalScreen = function() {
     ctx.textAlign="center";
     ctx.strokeText("Goal!", (canvas.width/2), 160);
 
-
     ctx.fillStyle = "rgba(255,0,0,1)";
     ctx.font = "36pt impact";
     ctx.textAlign="center";
@@ -467,7 +466,7 @@ GameManager.prototype.nextLevel = function() {
     }
     //increase the speed of enemies
     for (var i = 0; i < allEnemies.length; i++){
-    allEnemies[i].enemySpeed = allEnemies[i].setSpeed((this.gameLevel * 100));
+        allEnemies[i].enemySpeed = allEnemies[i].setSpeed((this.gameLevel * 100));
     }
 };
 
@@ -483,8 +482,8 @@ GameManager.prototype.selectCharScreen = function() {
 
     //cycle through characters and draw on canvas
     for (i = 0; i < (this.characters.length ); i++) {
-            ctx.drawImage(Resources.get(this.characters[i]), xlocation, ylocation, 101, 171);
-            ylocation = ylocation + 100;
+        ctx.drawImage(Resources.get(this.characters[i]), xlocation, ylocation, 101, 171);
+        ylocation = ylocation + 100;
     }
 
     //draw the cursor around one of the characters
@@ -506,7 +505,6 @@ GameManager.prototype.selectCharScreen = function() {
     ctx.fillStyle = "rgba(255,0,0,1)";
     ctx.font = "14pt impact";
     ctx.fillText("use arrow and enter keys to select", 70, 500);
-
 };
 
 //display bar at top of canvas with number of lives & points
@@ -521,7 +519,6 @@ GameManager.prototype.gameInfoBar = function() {
     ctx.fillText("Lives: " + this.lives, 350, 40);
     ctx.fillText("Level: " + this.gameLevel, 10, 40);
     ctx.fillText("Points: " + this.points, 410, 40);
-
 };
 
 //handles the key input while the character selection screen is displayed
@@ -551,7 +548,7 @@ GameManager.prototype.handleInput = function(keyPressed) {
 //start game manager
 var gManager = new GameManager();
 
-//The goal or area you try to move player to is set up as an object
+//instantiate goal
 var goal = new Goal();
 
 //generate all enemies and store in an array
@@ -561,8 +558,8 @@ for (var i = 0; i < numEnemies; i++){
     allEnemies.push(new Enemy());
 }
 
-//initiate and put items that you collect onthe board into an array to 
-//more easily work with
+//initiate and put items that you collect on the board into an array to 
+//make it easier to work with
 var allItems = [];
 allItems.push(new Heart());
 allItems.push(new BlueGem());
@@ -586,5 +583,3 @@ document.addEventListener('keyup', function(e) {
     gManager.handleInput(allowedKeys[e.keyCode]);
     player.handleInput(allowedKeys[e.keyCode]);
 });
-
-

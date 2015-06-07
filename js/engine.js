@@ -87,20 +87,25 @@ var Engine = (function(global) {
 
 
     }
+
+    //loop through the gems and see if they were pick up by player 
     function checkGems() {
-        //loop through the gems and see if they were pick up by player
+   
         for (var i = 0; i < allItems.length; i++) {
         allItems[i].pickupGem();
         }
 
     }
+
+    //loop through enemies to see if collided with player
     function checkCollisions() {
-        //loop through enemies to see if collided with player
+
         allEnemies.forEach(function(enemy) {
             enemy.collisions();
         });
 
     }
+    //check to see if player scored
     function checkGoal() {
         goal.scoreGoal();
 
