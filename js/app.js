@@ -69,7 +69,7 @@ Enemy.prototype.setLane = function() {
 
 //define the y coordinate based on the Lane number
 Enemy.prototype.setYloc = function() {
-    var yLoc = 0;
+    var yLoc;
     yLoc = ((this.enemyLane * 83) - 20);
     this.y = yLoc;
     return yLoc;
@@ -90,7 +90,7 @@ Enemy.prototype.render = function() {
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
-var Player = function(xloc, yloc) {
+var Player = function() {
     //fixed variables storing starting location for when game is initiated and restarted.
     this.startX = 202;
     this.startY = 402;
@@ -109,8 +109,8 @@ Player.prototype.update = function(xMove, yMove) {
 
     if (xMove || yMove) {
         //after key press, calculate new x & y coordinates for the player
-        xLoc = this.x + xMove;
-        yLoc = this.y + yMove;
+        var xLoc = this.x + xMove;
+        var yLoc = this.y + yMove;
         //prevent player from moving off canvas. Only updates characters location
         //if location moving to is still on screen.
         if (xLoc < canvas.width && xLoc >= 0) {
@@ -140,9 +140,8 @@ Player.prototype.handleInput = function(keyPressed) {
     var xMove = 0;
     var yMove = 0;
 
-    //If game is running use key input to determin relative movement. GameManager.handleInput() handles 
-    //key input if game isn't running.
-    if (gManager.gameRunning === "yes") {
+    //If game is running use key input to determin relative movement.
+    
         if (keyPressed === "left") {
             xMove = -101;
             yMove = 0;
@@ -156,7 +155,7 @@ Player.prototype.handleInput = function(keyPressed) {
             xMove = 0;
             yMove = 83;
         }
-    }
+    
     //pass move info over to Player.update()
     this.update(xMove, yMove);
 };
@@ -171,7 +170,6 @@ var Item = function() {
 
 //generates random Y location
 Item.prototype.chooseYloc = function() {
-    var yLoc;
     var yLoc = Math.floor(Math.random() * 3 + 1);
     yLoc = (yLoc * 83) - 35;
     this.y = yLoc;
@@ -180,7 +178,6 @@ Item.prototype.chooseYloc = function() {
 
 //generates random x location
 Item.prototype.chooseXloc = function() {
-    var xLoc;
     var xLoc = Math.floor(Math.random() * 5);
     xLoc = xLoc * 101;
     this.x = xLoc;
@@ -579,7 +576,10 @@ document.addEventListener('keyup', function(e) {
         40: 'down',
         13: 'enter'
     };
-    //passes input to both player and game manager
-    gManager.handleInput(allowedKeys[e.keyCode]);
-    player.handleInput(allowedKeys[e.keyCode]);
+    //passes input to player or game manager
+    if (gManager.gameRunning === "yes") { 
+        player.handleInput(allowedKeys[e.keyCode]);
+    } else if (gManager.gameRunning === "no") {
+        gManager.handleInput(allowedKeys[e.keyCode]);
+    }
 });
